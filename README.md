@@ -1,57 +1,97 @@
-# ProjectHub — Project Management Tool
+# ProjectHub — Community Project Management Platform
 
 **CodSoft Internship | Level 3 | Task 2**
 
-Built a full-stack MERN project management platform with JWT authentication, Kanban workflows, task tracking, dashboard analytics, and responsive UI architecture.
+A full-stack MERN community-driven project management platform with **role-based access**, JWT authentication, Kanban workflows, team collaboration, activity timelines, and an Admin oversight dashboard.
 
 ---
 
-## Live Demo
-Frontend: [Deploying to Vercel...]
-Backend: [Deploying to Render...]
-Database: MongoDB Atlas
+## 🚀 Live Demo
+
+| Layer    | URL |
+|----------|-----|
+| Frontend | [https://codsoft-task2-1.onrender.com](https://codsoft-task2-1.onrender.com) |
+| Backend  | [https://codsoft-task2.onrender.com](https://codsoft-task2.onrender.com) |
+| Database | MongoDB Atlas |
 
 ---
 
-## Screenshots
+## 🔑 Demo Login Credentials
 
-![Dashboard](assets/screenshots/dashboard.png)
-![Login](assets/screenshots/login.png)
-![Kanban Board](assets/screenshots/kanban.png)
+| Role  | Email                  | Password      | Access                                          |
+|-------|------------------------|---------------|-------------------------------------------------|
+| Admin | admin@projecthub.com   | adminpassword | Full system overview — all heads, projects, users |
+| Head  | rajesh@projecthub.com  | password123   | Create projects, manage team, accept requests   |
+| User  | rahul@projecthub.com   | password123   | Browse community projects, request to join      |
 
----
-
-## Demo Login
-
-| Account  | Email                   | Password        | Role                 |
-|----------|-------------------------|-----------------|----------------------|
-| Admin    | admin@projecthub.com    | adminpassword   | Full System Access   |
-| Head     | rajesh@projecthub.com   | password123     | Project Owner        |
-| User     | rahul@projecthub.com    | password123     | Community Member     |
-
-> On the login page, click the respective **"⚡" Auto-fill** buttons to fill credentials automatically, then click **Sign In**.
-
-The demo account includes **3 pre-built projects** with tasks across all statuses (Todo, In Progress, Done).
+> On the login page, click the **Admin ⚡**, **Head ⚡**, or **User ⚡** buttons to auto-fill credentials instantly.
 
 ---
 
-## Features
+## 📸 Screenshots
 
-- Register and login with JWT-based authentication
-- Dashboard with live stats — projects, tasks, completed count, overall progress %
+### Login Page
+![Login Page](assets/screenshots/login.png)
+
+### Head / Mentor Dashboard
+![Mentor Dashboard](assets/screenshots/mentor%20dashboard.png)
+
+### User Dashboard
+![User Dashboard](assets/screenshots/user%20dashboard.png)
+
+### Admin Dashboard
+![Admin Dashboard](assets/screenshots/admin%20dashboard.png)
+
+### Project Board (Kanban)
+![Project Board](assets/screenshots/project%20dashboard.png)
+
+### Create Project
+![Create Project](assets/screenshots/project%20create%20page%20.png)
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication & Roles
+- JWT-based register and login
+- Three distinct roles: **Admin**, **Head (Mentor)**, **User (Community Member)**
+- Role is embedded in JWT and enforced on every route (frontend + backend)
+
+### 🎯 Head / Mentor Role
+- Create and manage projects
+- View **Pending Join Requests** with one-click Accept
+- See **My Team Members** with their assigned projects
+- Manage Kanban board — move tasks through Todo → In Progress → Done
+
+### 👤 User / Community Role
+- Browse **Community Projects** and send join requests to Project Heads
+- View joined projects and track tasks on the Kanban board
+- Cannot create projects or access admin features
+
+### 🛡️ Admin Role
+- Access a dedicated **Admin Dashboard** at `/admin`
+- View all Project Heads, their projects, and all team members under them
+- No participation rights — read-only oversight
+
+### 📋 Project Management
 - Create projects with title, description, and deadline
-- Delete a project (automatically deletes all its tasks too)
-- Kanban board per project — **Todo → In Progress → Done**
-- Add tasks with title, description, assignee name, and due date
-- Animated progress bar per project
-- Color-coded status badges (yellow / blue / green)
-- Toast notifications on all actions (success & error)
-- Mobile responsive with hamburger menu
-- White & blue clean UI theme
+- Kanban board with 3 columns: **Todo**, **In Progress**, **Done**
+- Progress bar per project (% tasks completed)
+- Add, edit, and delete tasks with assignee and due date
+
+### 🕐 Activity Timeline
+- Automatically logs every task create, update, status change, and delete
+- Displayed per project in chronological order
+
+### 🌐 Community System
+- All projects are visible to the community
+- Users send join requests to Project Heads
+- Heads approve requests directly from their dashboard
+- Approved members appear on the project's team and in the Head's "My Team" section
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer     | Technology                         |
 |-----------|------------------------------------|
@@ -62,145 +102,14 @@ The demo account includes **3 pre-built projects** with tasks across all statuse
 | Backend   | Node.js + Express.js               |
 | Database  | MongoDB Atlas + Mongoose           |
 | Auth      | JWT (jsonwebtoken) + bcryptjs      |
+| Security  | Helmet + express-rate-limit        |
 | Toasts    | react-hot-toast                    |
 | Icons     | lucide-react                       |
+| Deploy    | Render (Backend + Frontend)        |
 
 ---
 
-## Ports
-
-| Project              | Backend | Frontend |
-|----------------------|---------|----------|
-| **This app**         | `5001`  | `3001`   |
-
----
-
-## Folder Structure
-
-```
-CODESOFT2/
-├── client/                          React + Vite frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx           Sticky top navbar with mobile menu
-│   │   │   ├── ProjectCard.jsx      Project card with progress bar
-│   │   │   ├── TaskCard.jsx         Task card with status badge & actions
-│   │   │   └── ProtectedRoute.jsx   Redirects to /login if not logged in
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx      JWT + user stored in localStorage
-│   │   ├── pages/
-│   │   │   ├── Login.jsx            Sign in page with demo credentials box
-│   │   │   ├── Register.jsx         Create account page
-│   │   │   ├── Dashboard.jsx        Stats overview + all projects grid
-│   │   │   ├── CreateProject.jsx    New project form
-│   │   │   └── ProjectDetail.jsx    Kanban board + add task modal
-│   │   ├── App.jsx                  Routes + Toaster config
-│   │   ├── main.jsx                 React entry point
-│   │   └── index.css                CSS variables, card, button, input styles
-│   ├── index.html                   HTML entry (Inter font, meta tags)
-│   ├── vite.config.js               Vite + Tailwind plugin + API proxy
-│   └── package.json
-│
-└── server/                          Node.js + Express backend
-    ├── models/
-    │   ├── User.js                  Schema with bcrypt pre-save hook
-    │   ├── Project.js               Schema with owner ref to User
-    │   └── Task.js                  Schema with status enum
-    ├── routes/
-    │   ├── auth.js                  POST /register, POST /login
-    │   ├── projects.js              GET / POST / GET:id / DELETE:id
-    │   └── tasks.js                 GET:projectId / POST / PATCH:status / DELETE
-    ├── middleware/
-    │   └── authMiddleware.js        Verifies JWT Bearer token on all protected routes
-    ├── seed.js                      Seeds demo user + 3 projects + 13 tasks
-    ├── server.js                    Express app, MongoDB connect, route mount
-    ├── .env                         Port, Mongo URI, JWT secret
-    └── package.json
-```
-
----
-
-## Setup Instructions
-
-### 1. MongoDB Atlas (free cloud database)
-
-1. Go to [https://cloud.mongodb.com](https://cloud.mongodb.com) → Sign up free
-2. Click **Build a Database** → choose **M0 Free** → Create
-3. Under **Security Quickstart**:
-   - Set a **username** and **password** — save them
-   - Click **Add My Current IP Address** → Finish
-4. Go to **Network Access** → check the IP list shows `0.0.0.0/0`
-   - If you see `00.00.00.00/0` → delete it (invalid) → add `0.0.0.0/0` instead
-5. On cluster page → **Connect** → **Drivers** → copy the connection string
-6. Edit `server/.env` — paste connection string and add database name:
-
-```env
-PORT=5001
-MONGO_URI=mongodb+srv://your_user:your_pass@cluster0.xxxxx.mongodb.net/project-manager?retryWrites=true&w=majority&appName=Cluster0
-JWT_SECRET=any_secret_string_here
-```
-
-
-### 2. Install Dependencies
-
-Install root, backend, and frontend dependencies all at once:
-
-```bash
-# In the root CODESOFT2 directory
-npm install
-npm run install-all
-```
-
----
-
-### 3. Seed Demo Data
-
-```bash
-cd server
-node seed.js
-```
-
-Output when successful:
-```
-✅ Connected to MongoDB
-👤 Demo user created: demo@projecthub.com / demo1234
-🌱 Demo projects and tasks seeded!
-✅ Done.
-```
-
----
-
-### 4. Start the Servers
-
-You can start both the frontend and backend simultaneously from the root directory using the `concurrently` setup:
-
-```bash
-# In the root CODESOFT2 directory
-npm run dev
-```
-
-Expected output:
-```
-[server] ✅ Connected to MongoDB
-[server] 🚀 Server running on http://localhost:5001
-[client] VITE ready in xxx ms
-[client] ➜  Local: http://localhost:3001/
-```
-
-*(Alternatively, you can run them in separate terminals by navigating into the `server` and `client` folders and running `npm run dev` in each.)*
-
----
-
-### 5. Open the App
-
-Go to → **http://localhost:3001**
-
-- Click **Auto-fill ⚡** on the login page → Sign In
-- Or register a new account
-
----
-
-## API Reference
+## 🔌 API Reference
 
 All protected routes require header:
 ```
@@ -208,60 +117,193 @@ Authorization: Bearer <jwt_token>
 ```
 
 ### Auth
-| Method | Endpoint              | Auth | Description             |
-|--------|-----------------------|------|-------------------------|
-| POST   | /api/auth/register    | ❌   | Register, returns JWT   |
-| POST   | /api/auth/login       | ❌   | Login, returns JWT      |
+| Method | Endpoint           | Auth | Description           |
+|--------|--------------------|------|-----------------------|
+| POST   | /api/auth/register | ❌   | Register, returns JWT |
+| POST   | /api/auth/login    | ❌   | Login, returns JWT    |
 
 ### Projects
-| Method | Endpoint              | Auth | Description                      |
-|--------|-----------------------|------|----------------------------------|
-| GET    | /api/projects         | ✅   | All projects of logged-in user   |
-| POST   | /api/projects         | ✅   | Create project                   |
-| GET    | /api/projects/:id     | ✅   | Single project                   |
-| DELETE | /api/projects/:id     | ✅   | Delete project + all its tasks   |
+| Method | Endpoint                      | Auth | Description                              |
+|--------|-------------------------------|------|------------------------------------------|
+| GET    | /api/projects                 | ✅   | All projects of logged-in user           |
+| POST   | /api/projects                 | ✅   | Create project (Head only)               |
+| GET    | /api/projects/community       | ✅   | Projects user can request to join        |
+| GET    | /api/projects/:id             | ✅   | Single project detail                    |
+| DELETE | /api/projects/:id             | ✅   | Delete project (owner only)              |
+| POST   | /api/projects/:id/request     | ✅   | Send join request (User only)            |
+| POST   | /api/projects/:id/accept      | ✅   | Accept join request (Head only)          |
 
 ### Tasks
-| Method | Endpoint                   | Auth | Description              |
-|--------|----------------------------|------|--------------------------|
-| GET    | /api/tasks/:projectId      | ✅   | All tasks in a project   |
-| POST   | /api/tasks                 | ✅   | Create task              |
-| PATCH  | /api/tasks/:id/status      | ✅   | Update task status       |
-| DELETE | /api/tasks/:id             | ✅   | Delete task              |
+| Method | Endpoint              | Auth | Description            |
+|--------|-----------------------|------|------------------------|
+| GET    | /api/tasks/:projectId | ✅   | All tasks in a project |
+| POST   | /api/tasks            | ✅   | Create task            |
+| PUT    | /api/tasks/:id        | ✅   | Edit task              |
+| PATCH  | /api/tasks/:id/status | ✅   | Update task status     |
+| DELETE | /api/tasks/:id        | ✅   | Delete task            |
+
+### Activities
+| Method | Endpoint               | Auth | Description                    |
+|--------|------------------------|------|--------------------------------|
+| GET    | /api/activities/:id    | ✅   | Activity timeline for project  |
+
+### Admin
+| Method | Endpoint           | Auth | Description                              |
+|--------|--------------------|------|------------------------------------------|
+| GET    | /api/admin/overview | ✅  | All heads, their projects, and members   |
 
 ---
 
-## Database Schemas
+## 🗂️ Folder Structure
+
+```
+CODESOFT2/
+├── client/                          React + Vite frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx           Role-aware sticky navbar
+│   │   │   ├── ProjectCard.jsx      Project card with progress bar
+│   │   │   ├── TaskCard.jsx         Task card with status badge & actions
+│   │   │   └── ProtectedRoute.jsx   Role-based route protection
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx      JWT + user + role in localStorage
+│   │   ├── pages/
+│   │   │   ├── Login.jsx            Multi-role auto-fill login page
+│   │   │   ├── Register.jsx         Create account page
+│   │   │   ├── Dashboard.jsx        Role-aware dashboard (Head/User views)
+│   │   │   ├── CreateProject.jsx    New project form (Head only)
+│   │   │   ├── ProjectDetail.jsx    Kanban + requests + activity timeline
+│   │   │   └── AdminDashboard.jsx   System-wide overview (Admin only)
+│   │   ├── App.jsx                  Routes + role guards + Toaster
+│   │   ├── main.jsx                 React entry + Axios base URL config
+│   │   └── index.css                CSS design system
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+│
+└── server/                          Node.js + Express backend
+    ├── models/
+    │   ├── User.js                  Schema with role enum (user|head|admin)
+    │   ├── Project.js               Schema with members & requests arrays
+    │   └── Task.js                  Schema with status enum
+    ├── routes/
+    │   ├── auth.js                  POST /register, POST /login
+    │   ├── projects.js              Full CRUD + community + request/accept
+    │   ├── tasks.js                 Task CRUD + status update
+    │   ├── activities.js            Activity timeline log
+    │   └── admin.js                 Admin-only overview route
+    ├── middleware/
+    │   └── authMiddleware.js        JWT verification middleware
+    ├── seed.js                      Seeds admin + heads + users + projects
+    ├── server.js                    Express app + helmet + rate-limit
+    ├── render.yaml                  Render Blueprint for deployment
+    ├── .env.example                 Environment variable template
+    └── package.json
+```
+
+---
+
+## ⚙️ Local Setup
+
+### 1. Clone and Install
+
+```bash
+git clone https://github.com/Ganesh2006646/codesoft_task2.git
+cd codesoft_task2
+npm install
+npm run install-all
+```
+
+### 2. Configure Environment
+
+Create `server/.env`:
+```env
+PORT=5001
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.xxxxx.mongodb.net/project-manager?retryWrites=true&w=majority
+JWT_SECRET=your_secret_key
+DEMO_EMAIL=demo@projecthub.com
+DEMO_PASSWORD=demo1234
+CLIENT_URL=http://localhost:3001
+```
+
+### 3. Seed the Database
+
+```bash
+cd server
+node seed.js
+```
+
+Expected output:
+```
+✅ Connected to MongoDB
+🗑️  Cleared old data
+🌱 Database seeded successfully!
+─────────────────────────────────
+  🛡️ Admin Email  : admin@projecthub.com
+  🛡️ Admin Pass   : adminpassword
+─────────────────────────────────
+  📧 Demo Email   : demo@projecthub.com
+  🔑 Demo Password: demo1234
+─────────────────────────────────
+```
+
+### 4. Run the App
+
+```bash
+npm run dev
+```
+
+Open → **http://localhost:3001**
+
+---
+
+## 🚢 Render Deployment
+
+This project uses a `render.yaml` Blueprint. To deploy:
+
+1. Push this repository to GitHub.
+2. Go to [Render](https://render.com) → **New Blueprint Instance**.
+3. Connect your GitHub repo — Render reads `render.yaml` automatically.
+4. Set environment variables in the Render backend service:
+   - `MONGO_URI` — your MongoDB Atlas connection string
+   - `JWT_SECRET` — any secure random string
+   - `CLIENT_URL` — your frontend Render URL
+
+> **Build Command:** `cd server && npm install`  
+> **Start Command:** `cd server && node server.js`
+
+---
+
+## 🗃️ Database Schemas
 
 ### User
-| Field     | Type   | Rules                   |
-|-----------|--------|-------------------------|
-| name      | String | required                |
-| email     | String | required, unique        |
-| password  | String | required, bcrypt hashed |
-| createdAt | Date   | auto                    |
+| Field     | Type   | Values              |
+|-----------|--------|---------------------|
+| name      | String | required            |
+| email     | String | required, unique    |
+| password  | String | bcrypt hashed       |
+| role      | String | user \| head \| admin |
 
 ### Project
-| Field       | Type     | Rules              |
-|-------------|----------|--------------------|
-| title       | String   | required           |
-| description | String   | optional           |
-| deadline    | Date     | optional           |
-| owner       | ObjectId | ref: User          |
-| createdAt   | Date     | auto               |
+| Field       | Type       | Notes                        |
+|-------------|------------|------------------------------|
+| title       | String     | required                     |
+| description | String     | optional                     |
+| deadline    | Date       | optional                     |
+| owner       | ObjectId   | ref: User                    |
+| members     | ObjectId[] | ref: User                    |
+| requests    | ObjectId[] | pending join requests (User) |
 
 ### Task
-| Field       | Type     | Rules                            |
+| Field       | Type     | Notes                            |
 |-------------|----------|----------------------------------|
 | title       | String   | required                         |
 | description | String   | optional                         |
 | assignee    | String   | optional                         |
 | dueDate     | Date     | optional                         |
-| status      | String   | "Todo" / "In Progress" / "Done"  |
+| status      | String   | Todo / In Progress / Done        |
 | project     | ObjectId | ref: Project                     |
-| createdAt   | Date     | auto                             |
 
 ---
-
 
 *CodSoft Internship — Level 3 Task 2 | Built with React + Node.js + MongoDB*
