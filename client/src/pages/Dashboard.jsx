@@ -5,19 +5,26 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import ProjectCard from "../components/ProjectCard";
-import { FolderPlus, LayoutGrid, ListChecks, CheckCircle2, TrendingUp } from "lucide-react";
+import { FolderPlus, LayoutGrid, ListChecks, CheckCircle2, TrendingUp, Users } from "lucide-react";
 
 const Dashboard = () => {
   const { token, user } = useAuth();
   const [projects, setProjects] = useState([]);
+  const [communityProjects, setCommunityProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("/api/projects", { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => setProjects(r.data))
+    Promise.all([
+      axios.get("/api/projects", { headers: { Authorization: `Bearer ${token}` } }),
+      axios.get("/api/projects/community", { headers: { Authorization: `Bearer ${token}` } })
+    ])
+      .then(([myRes, commRes]) => {
+        setProjects(myRes.data);
+        setCommunityProjects(commRes.data);
+      })
       .catch(() => toast.error("Failed to load projects."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this project and all its tasks?")) return;
@@ -26,6 +33,15 @@ const Dashboard = () => {
       setProjects(prev => prev.filter(p => p._id !== id));
       toast.success("Project deleted.");
     } catch { toast.error("Failed to delete project."); }
+  };
+
+  const handleRequestJoin = async (id) => {
+    try {
+      const { data } = await axios.post(`/api/projects/${id}/request`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(data.message);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send request.");
+    }
   };
 
   const totalProjects = projects.length;
@@ -69,7 +85,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Header */}
+        {/* Your Projects Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
           <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>Your Projects</h2>
           <Link to="/create-project" className="btn-primary" style={{ textDecoration: "none", padding: "9px 16px" }}>
@@ -77,13 +93,13 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* Projects */}
+        {/* Your Projects */}
         {loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
             {[1,2,3].map(i => <div key={i} className="card" style={{ height: "180px", background: "#f1f5f9" }} />)}
           </div>
         ) : projects.length === 0 ? (
-          <div className="card fade-in" style={{ padding: "60px 20px", textAlign: "center" }}>
+          <div className="card fade-in" style={{ padding: "60px 20px", textAlign: "center", marginBottom: "40px" }}>
             <div style={{ width: "64px", height: "64px", background: "#eff6ff", borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <FolderPlus size={28} color="#2563eb" />
             </div>
@@ -94,10 +110,46 @@ const Dashboard = () => {
             </Link>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
             {projects.map((p, i) => <ProjectCard key={p._id} project={p} onDelete={handleDelete} index={i} />)}
           </div>
         )}
+
+        {/* Community Projects Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", marginTop: "40px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>Community Projects</h2>
+        </div>
+
+        {/* Community Projects */}
+        {loading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+            {[1,2,3].map(i => <div key={i} className="card" style={{ height: "140px", background: "#f1f5f9" }} />)}
+          </div>
+        ) : communityProjects.length === 0 ? (
+          <div className="card fade-in" style={{ padding: "40px 20px", textAlign: "center" }}>
+            <p style={{ color: "#64748b", fontSize: "14px" }}>No community projects available to join.</p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+            {communityProjects.map((p, i) => (
+              <div key={p._id} className={`card fade-in delay-${i % 4}`} style={{ padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div>
+                  <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b", marginBottom: "6px" }}>{p.title}</h3>
+                  <p style={{ fontSize: "13px", color: "#64748b", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {p.description || "No description provided."}
+                  </p>
+                </div>
+                <div style={{ marginTop: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "12px", color: "#94a3b8" }}>By {p.owner?.name}</span>
+                  <button onClick={() => handleRequestJoin(p._id)} className="btn-outline" style={{ padding: "6px 12px", fontSize: "12px" }}>
+                    <Users size={14} /> Request to Join
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
       </main>
     </div>
   );

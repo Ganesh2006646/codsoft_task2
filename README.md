@@ -142,12 +142,6 @@ MONGO_URI=mongodb+srv://your_user:your_pass@cluster0.xxxxx.mongodb.net/project-m
 JWT_SECRET=any_secret_string_here
 ```
 
-> ⚠️ If your password contains special characters like `@`, `#`, `!` — encode them:
-> - `@` → `%40`
-> - `#` → `%23`
-> - `!` → `%21`
-
----
 
 ### 2. Install Dependencies
 

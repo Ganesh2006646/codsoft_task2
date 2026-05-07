@@ -13,75 +13,92 @@ async function seed() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("✅ Connected to MongoDB");
 
-  // Remove any existing demo user + their data
-  const existing = await User.findOne({ email: DEMO_EMAIL });
-  if (existing) {
-    const projects = await Project.find({ owner: existing._id });
-    for (const p of projects) await Task.deleteMany({ project: p._id });
-    await Project.deleteMany({ owner: existing._id });
-    await User.deleteOne({ _id: existing._id });
-    console.log("🗑️  Cleared old demo data");
-  }
+  // Clear existing data
+  await Task.deleteMany({});
+  await Project.deleteMany({});
+  await User.deleteMany({});
+  console.log("🗑️  Cleared old data");
 
-  // Create demo user (password hashed via pre-save hook)
-  const user = await User.create({
+  // Create Demo User
+  const demoUser = await User.create({
     name: "Demo User",
     email: DEMO_EMAIL,
     password: DEMO_PASSWORD,
   });
-  console.log(`👤 Demo user created: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
 
-  // ── Project 1: Website Redesign ──
-  const p1 = await Project.create({
-    title: "Website Redesign",
-    description: "Redesign the company website with a modern UI and improved performance.",
-    deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-    owner: user._id,
-  });
-  await Task.insertMany([
-    { title: "Create wireframes",        description: "Design all page layouts in Figma.",          assignee: "Alice",  dueDate: new Date(Date.now() + 3  * 86400000), status: "Done",        project: p1._id },
-    { title: "Set up project repo",      description: "Initialize Git repo and folder structure.",   assignee: "Bob",    dueDate: new Date(Date.now() + 2  * 86400000), status: "Done",        project: p1._id },
-    { title: "Build homepage component", description: "Code the hero, navbar, and footer sections.", assignee: "Alice",  dueDate: new Date(Date.now() + 7  * 86400000), status: "In Progress", project: p1._id },
-    { title: "Write API integration",    description: "Connect the contact form to the backend.",    assignee: "Bob",    dueDate: new Date(Date.now() + 10 * 86400000), status: "Todo",        project: p1._id },
-    { title: "Cross-browser testing",    description: "Test on Chrome, Firefox, Safari, and Edge.",  assignee: "Carol",  dueDate: new Date(Date.now() + 13 * 86400000), status: "Todo",        project: p1._id },
+  // Create 3 Heads
+  const heads = await User.insertMany([
+    { name: "Alice Head", email: "alice@projecthub.com", password: "password123" },
+    { name: "Bob Head", email: "bob@projecthub.com", password: "password123" },
+    { name: "Charlie Head", email: "charlie@projecthub.com", password: "password123" },
   ]);
 
-  // ── Project 2: Mobile App MVP ──
-  const p2 = await Project.create({
-    title: "Mobile App MVP",
-    description: "Build the minimum viable product for the new React Native mobile application.",
-    deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    owner: user._id,
+  // Create 10 Community Users
+  const communityUsersData = Array.from({ length: 10 }).map((_, i) => ({
+    name: `User ${i + 1}`,
+    email: `user${i + 1}@projecthub.com`,
+    password: "password123",
+  }));
+  const communityUsers = await User.insertMany(communityUsersData);
+
+  // Heads create projects and add some community users as members
+  const projectsData = [
+    {
+      title: "Alpha Platform",
+      description: "Next gen AI platform.",
+      owner: heads[0]._id,
+      members: [communityUsers[0]._id, communityUsers[1]._id],
+    },
+    {
+      title: "Beta Initiative",
+      description: "Marketing rollout for Beta.",
+      owner: heads[0]._id,
+      members: [communityUsers[2]._id, communityUsers[3]._id],
+    },
+    {
+      title: "Gamma Project",
+      description: "Infrastructure overhaul.",
+      owner: heads[1]._id,
+      members: [communityUsers[4]._id, communityUsers[5]._id],
+    },
+    {
+      title: "Delta Operations",
+      description: "Scaling our database systems.",
+      owner: heads[2]._id,
+      members: [communityUsers[6]._id, communityUsers[7]._id],
+    }
+  ];
+
+  const projects = await Project.insertMany(projectsData);
+
+  // Add tasks
+  const tasksData = [];
+  projects.forEach((proj, idx) => {
+    tasksData.push({
+      title: `Task 1 for ${proj.title}`,
+      description: "Initial setup",
+      status: "Done",
+      project: proj._id,
+      assignee: `User ${idx * 2 + 1}`
+    });
+    tasksData.push({
+      title: `Task 2 for ${proj.title}`,
+      description: "Implementation phase",
+      status: "In Progress",
+      project: proj._id,
+      assignee: `User ${idx * 2 + 2}`
+    });
   });
-  await Task.insertMany([
-    { title: "Define app screens",       description: "List all screens and navigation flows.",      assignee: "Dan",    dueDate: new Date(Date.now() + 4  * 86400000), status: "Done",        project: p2._id },
-    { title: "Auth flow",                description: "Login and registration screens with JWT.",     assignee: "Eve",    dueDate: new Date(Date.now() + 8  * 86400000), status: "In Progress", project: p2._id },
-    { title: "Dashboard screen",         description: "Build the main dashboard UI.",                assignee: "Dan",    dueDate: new Date(Date.now() + 15 * 86400000), status: "Todo",        project: p2._id },
-    { title: "Push notifications",       description: "Integrate Firebase Cloud Messaging.",          assignee: "Eve",    dueDate: new Date(Date.now() + 25 * 86400000), status: "Todo",        project: p2._id },
-  ]);
 
-  // ── Project 3: Marketing Campaign ──
-  const p3 = await Project.create({
-    title: "Q2 Marketing Campaign",
-    description: "Plan and execute the Q2 social media and email marketing campaign.",
-    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    owner: user._id,
-  });
-  await Task.insertMany([
-    { title: "Write campaign brief",     description: "Define target audience and key messages.",    assignee: "Frank",  dueDate: new Date(Date.now() + 1  * 86400000), status: "Done",        project: p3._id },
-    { title: "Design social assets",     description: "Create graphics for Instagram and Twitter.",  assignee: "Grace",  dueDate: new Date(Date.now() + 3  * 86400000), status: "Done",        project: p3._id },
-    { title: "Schedule email blasts",    description: "Set up automated email sequences in HubSpot.",assignee: "Frank",  dueDate: new Date(Date.now() + 5  * 86400000), status: "Done",        project: p3._id },
-    { title: "Analyze performance",      description: "Review click-through and conversion rates.",   assignee: "Grace",  dueDate: new Date(Date.now() + 7  * 86400000), status: "In Progress", project: p3._id },
-  ]);
+  await Task.insertMany(tasksData);
 
-  console.log("🌱 Demo projects and tasks seeded!");
-  console.log("\n─────────────────────────────────");
-  console.log("  📧 Email   : demo@projecthub.com");
-  console.log("  🔑 Password: demo1234");
-  console.log("─────────────────────────────────\n");
-
+  console.log("🌱 Database seeded successfully!");
+  console.log("─────────────────────────────────");
+  console.log("  📧 Demo Email   : " + DEMO_EMAIL);
+  console.log("  🔑 Demo Password: " + DEMO_PASSWORD);
+  console.log("─────────────────────────────────");
+  
   await mongoose.disconnect();
-  console.log("✅ Done. You can now log in with the demo credentials.");
   process.exit(0);
 }
 

@@ -27,6 +27,12 @@ const projectSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    requests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   { timestamps: true }
 );

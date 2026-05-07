@@ -5,7 +5,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import TaskCard from "../components/TaskCard";
-import { ArrowLeft, Plus, X, Calendar, User, ListTodo, Clock, CheckCircle2, Users, Activity, Mail } from "lucide-react";
+import { ArrowLeft, Plus, X, Calendar, User, ListTodo, Clock, CheckCircle2, Users, Activity, Check } from "lucide-react";
 
 const COLS = ["Todo", "In Progress", "Done"];
 const colCfg = {
@@ -25,8 +25,7 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true);
   
   const [showModal, setShowModal] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
   
   const [taskForm, setTaskForm] = useState(emptyTask);
   const [editingTaskId, setEditingTaskId] = useState(null);
@@ -98,17 +97,13 @@ const ProjectDetail = () => {
     } catch { toast.error("Failed to delete task."); }
   };
 
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    setSaving(true);
+  const handleAcceptRequest = async (userId) => {
     try {
-      const { data } = await axios.post(`/api/projects/${id}/invite`, { email: inviteEmail }, auth);
-      setProject(prev => ({ ...prev, members: [...prev.members, data.user] }));
-      setInviteEmail("");
-      setShowInviteModal(false);
+      const { data } = await axios.post(`/api/projects/${id}/accept`, { userId }, auth);
       toast.success(data.message);
-    } catch (err) { toast.error(err.response?.data?.message || "Failed to invite user."); }
-    finally { setSaving(false); }
+      const p = await axios.get(`/api/projects/${id}`, auth);
+      setProject(p.data);
+    } catch (err) { toast.error(err.response?.data?.message || "Failed to accept request."); }
   };
 
   const openEditModal = (task) => {
@@ -162,9 +157,12 @@ const ProjectDetail = () => {
             </div>
             
             <div style={{ display: "flex", gap: "10px" }}>
-              {project?.owner?._id === currentUser?.id && (
-                <button onClick={() => setShowInviteModal(true)} className="btn-outline" style={{ whiteSpace: "nowrap" }}>
-                  <Users size={15} /> Invite
+              {project?.owner?._id === currentUser?.id && project?.requests?.length > 0 && (
+                <button onClick={() => setShowRequestsModal(true)} className="btn-outline" style={{ whiteSpace: "nowrap", position: "relative" }}>
+                  <Users size={15} /> Pending Requests
+                  <span style={{ position: "absolute", top: "-5px", right: "-5px", background: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: "bold", padding: "2px 6px", borderRadius: "10px" }}>
+                    {project.requests.length}
+                  </span>
                 </button>
               )}
               <button onClick={() => { setTaskForm(emptyTask); setEditingTaskId(null); setShowModal(true); }} className="btn-primary" style={{ whiteSpace: "nowrap" }}>
@@ -297,32 +295,36 @@ const ProjectDetail = () => {
         </div>
       )}
 
-      {/* Invite Member Modal */}
-      {showInviteModal && (
+      {/* Pending Requests Modal */}
+      {showRequestsModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", background: "rgba(15,23,42,0.4)" }}>
           <div className="card fade-in" style={{ width: "100%", maxWidth: "400px", padding: "28px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "22px" }}>
               <h2 style={{ fontSize: "17px", fontWeight: "800", color: "#1e293b", display: "flex", alignItems: "center", gap: "8px" }}>
-                <Mail size={18} color="#2563eb" /> Invite Member
+                <Users size={18} color="#2563eb" /> Pending Requests
               </h2>
-              <button onClick={() => setShowInviteModal(false)} style={{ padding: "5px", border: "none", background: "#f1f5f9", borderRadius: "6px", cursor: "pointer", color: "#64748b" }}>
+              <button onClick={() => setShowRequestsModal(false)} style={{ padding: "5px", border: "none", background: "#f1f5f9", borderRadius: "6px", cursor: "pointer", color: "#64748b" }}>
                 <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleInvite}>
-              <div style={{ marginBottom: "22px" }}>
-                <label className="label">User Email *</label>
-                <input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} required placeholder="colleague@example.com" className="input-field-bare" />
-                <p style={{ fontSize: "12px", color: "#64748b", marginTop: "8px" }}>They must already have an account on this platform.</p>
-              </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button type="submit" disabled={saving} className="btn-primary" style={{ flex: 1, justifyContent: "center" }}>
-                  {saving ? <span className="spinner" /> : "Send Invite"}
-                </button>
-                <button type="button" onClick={() => setShowInviteModal(false)} className="btn-outline">Cancel</button>
-              </div>
-            </form>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "300px", overflowY: "auto" }}>
+              {project?.requests?.length === 0 ? (
+                <p style={{ color: "#64748b", fontSize: "14px", textAlign: "center" }}>No pending requests.</p>
+              ) : (
+                project?.requests?.map(req => (
+                  <div key={req._id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px", background: "#f8fafc", borderRadius: "8px" }}>
+                    <div>
+                      <p style={{ fontSize: "14px", fontWeight: "600", color: "#1e293b", margin: 0 }}>{req.name}</p>
+                      <p style={{ fontSize: "12px", color: "#64748b", margin: 0 }}>{req.email}</p>
+                    </div>
+                    <button onClick={() => handleAcceptRequest(req._id)} className="btn-primary" style={{ padding: "6px 12px", fontSize: "12px" }}>
+                      <Check size={14} /> Accept
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

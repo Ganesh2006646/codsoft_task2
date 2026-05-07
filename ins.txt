@@ -1,0 +1,23 @@
+How to add screenshots to your README.md:
+
+1. Take screenshots of your application:
+   - Dashboard page
+   - Login page
+   - Kanban board page (Project Detail)
+
+2. Save the screenshot images with the following names:
+   - dashboard.png
+   - login.png
+   - kanban.png
+
+3. Place these images inside the `assets/screenshots/` directory in your repository.
+
+4. Once the files are in that folder, they will automatically appear in your README.md because the links are already set up:
+   ![Dashboard](assets/screenshots/dashboard.png)
+   ![Login](assets/screenshots/login.png)
+   ![Kanban Board](assets/screenshots/kanban.png)
+
+5. Commit and push the images to GitHub:
+   git add assets/screenshots/
+   git commit -m "docs: add project screenshots"
+   git push

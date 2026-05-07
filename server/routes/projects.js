@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
     })
       .populate("owner", "name email")
       .populate("members", "name email")
+      .populate("requests", "name email")
       .sort({
         createdAt: -1,
       });
@@ -41,6 +42,33 @@ router.get("/", async (req, res) => {
     res.json(projectsWithStats);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch projects." });
+  }
+});
+
+// ─── GET /api/projects/community ─────────────────────────────
+// Returns all projects where user is NOT owner and NOT member
+router.get("/community", async (req, res) => {
+  try {
+    const projects = await Project.find({
+      owner: { $ne: req.user.id },
+      members: { $ne: req.user.id }
+    })
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
+
+    const projectsWithStats = await Promise.all(
+      projects.map(async (project) => {
+        const totalTasks = await Task.countDocuments({ project: project._id });
+        return {
+          ...project.toObject(),
+          totalTasks,
+        };
+      })
+    );
+
+    res.json(projectsWithStats);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch community projects." });
   }
 });
 
@@ -78,7 +106,8 @@ router.get("/:id", async (req, res) => {
       $or: [{ owner: req.user.id }, { members: req.user.id }],
     })
       .populate("owner", "name email")
-      .populate("members", "name email");
+      .populate("members", "name email")
+      .populate("requests", "name email");
 
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
@@ -157,6 +186,66 @@ router.post("/:id/invite", async (req, res) => {
       return res.status(404).json({ message: "Project not found." });
     }
     res.status(500).json({ message: "Failed to invite user." });
+  }
+});
+
+// ─── POST /api/projects/:id/request ─────────────────────────
+router.post("/:id/request", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found." });
+    }
+    
+    if (project.owner.toString() === req.user.id || project.members.includes(req.user.id)) {
+      return res.status(400).json({ message: "You are already a member or owner of this project." });
+    }
+
+    if (project.requests.includes(req.user.id)) {
+      return res.status(400).json({ message: "Request already sent." });
+    }
+
+    project.requests.push(req.user.id);
+    await project.save();
+
+    res.json({ message: "Request sent successfully." });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Project not found." });
+    }
+    res.status(500).json({ message: "Failed to send request." });
+  }
+});
+
+// ─── POST /api/projects/:id/accept ──────────────────────────
+router.post("/:id/accept", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const project = await Project.findOne({
+      _id: req.params.id,
+      owner: req.user.id,
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found or you are not the owner." });
+    }
+
+    if (!project.requests.includes(userId)) {
+      return res.status(400).json({ message: "No request found from this user." });
+    }
+
+    project.requests = project.requests.filter(id => id.toString() !== userId);
+    if (!project.members.includes(userId)) {
+      project.members.push(userId);
+    }
+    await project.save();
+
+    res.json({ message: "Request accepted and user added to project." });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Project not found." });
+    }
+    res.status(500).json({ message: "Failed to accept request." });
   }
 });
 
