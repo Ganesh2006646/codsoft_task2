@@ -49,6 +49,11 @@ router.get("/", async (req, res) => {
 // Returns all projects where user is NOT owner and NOT member
 router.get("/community", async (req, res) => {
   try {
+    // Admins have no rights to participate in projects
+    if (req.user.role === "admin") {
+      return res.json([]);
+    }
+
     const projects = await Project.find({
       owner: { $ne: req.user.id },
       members: { $ne: req.user.id }
@@ -75,6 +80,10 @@ router.get("/community", async (req, res) => {
 // ─── POST /api/projects ─────────────────────────────────────
 router.post("/", async (req, res) => {
   try {
+    if (req.user.role === "admin") {
+      return res.status(403).json({ message: "Admins cannot create projects." });
+    }
+
     const { title, description, deadline } = req.body;
 
     if (!title) {
@@ -192,6 +201,10 @@ router.post("/:id/invite", async (req, res) => {
 // ─── POST /api/projects/:id/request ─────────────────────────
 router.post("/:id/request", async (req, res) => {
   try {
+    if (req.user.role === "admin") {
+      return res.status(403).json({ message: "Admins cannot request to join projects." });
+    }
+
     const project = await Project.findById(req.params.id);
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
