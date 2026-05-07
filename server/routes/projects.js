@@ -205,6 +205,12 @@ router.post("/:id/request", async (req, res) => {
       return res.status(403).json({ message: "Admins cannot request to join projects." });
     }
 
+    // Heads (users who own any project) cannot join other projects as members
+    const ownsAnyProject = await Project.exists({ owner: req.user.id });
+    if (ownsAnyProject) {
+      return res.status(403).json({ message: "Project heads cannot request to join other projects." });
+    }
+
     const project = await Project.findById(req.params.id);
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
