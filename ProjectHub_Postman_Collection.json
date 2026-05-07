@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "ProjectHub API - CodSoft Level 3 Task 2",
+    "description": "Complete Postman collection for the ProjectHub API. Includes authentication, project management, and task management workflows.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@projecthub.com\",\n  \"password\": \"testpass123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/auth/register",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login (Demo Head)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.environment.set(\"JWT_TOKEN\", jsonData.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rajesh@projecthub.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/auth/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Projects",
+      "item": [
+        {
+          "name": "Get User Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{JWT_TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/projects",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "projects"]
+            }
+          }
+        },
+        {
+          "name": "Get Community Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{JWT_TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/projects/community",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "projects", "community"]
+            }
+          }
+        },
+        {
+          "name": "Create Project (Head Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{JWT_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman API Integration\",\n  \"description\": \"Setting up comprehensive tests for all routes.\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/projects",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "projects"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Tasks",
+      "item": [
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{JWT_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Write Tests\",\n  \"description\": \"Write Postman tests for task routes\",\n  \"project\": \"<PROJECT_ID_HERE>\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks"]
+            }
+          }
+        },
+        {
+          "name": "Update Task Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{JWT_TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/tasks/<TASK_ID_HERE>/status",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "tasks", "<TASK_ID_HERE>", "status"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:5001",
+      "type": "string"
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
