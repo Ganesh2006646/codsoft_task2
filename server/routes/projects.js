@@ -86,7 +86,7 @@ router.post("/", async (req, res) => {
 
     const { title, description, deadline } = req.body;
 
-    if (!title) {
+    if (!title || title.trim() === "") {
       return res.status(400).json({ message: "Project title is required." });
     }
 

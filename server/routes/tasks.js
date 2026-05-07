@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
   try {
     const { title, description, assignee, dueDate, project: projectId } = req.body;
 
-    if (!title || !projectId) {
+    if (!title || title.trim() === "" || !projectId) {
       return res.status(400).json({ message: "Task title and project are required." });
     }
 
@@ -160,6 +160,10 @@ router.delete("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { title, description, assignee, dueDate } = req.body;
+
+    if (title !== undefined && title.trim() === "") {
+      return res.status(400).json({ message: "Task title cannot be empty." });
+    }
 
     const task = await Task.findById(req.params.id);
     if (!task) {

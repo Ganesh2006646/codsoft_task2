@@ -74,18 +74,35 @@ const ProjectDetail = () => {
       setTaskForm(emptyTask);
       setEditingTaskId(null);
       setShowModal(false);
-      fetchActivities(); // Refresh timeline
+      fetchTasksAndActivities(); // Refresh timeline and tasks
     } catch (err) { toast.error(err.response?.data?.message || "Failed to save task."); }
     finally { setSaving(false); }
   };
 
-  const handleStatusChange = async (taskId, newStatus) => {
+  const fetchTasksAndActivities = async () => {
     try {
-      const { data } = await axios.patch(`/api/tasks/${taskId}/status`, { status: newStatus }, auth);
-      setTasks(prev => prev.map(t => t._id === taskId ? data : t));
+      const [t, a] = await Promise.all([
+        axios.get(`/api/tasks/${id}`, auth),
+        axios.get(`/api/activities/${id}`, auth)
+      ]);
+      setTasks(t.data);
+      setActivities(a.data);
+    } catch { }
+  };
+
+  const handleStatusChange = async (taskId, newStatus) => {
+    // Optimistic update
+    const previousTasks = [...tasks];
+    setTasks(prev => prev.map(t => t._id === taskId ? { ...t, status: newStatus } : t));
+    
+    try {
+      await axios.patch(`/api/tasks/${taskId}/status`, { status: newStatus }, auth);
       toast.success(`Moved to ${newStatus}`);
-      fetchActivities(); // Refresh timeline
-    } catch { toast.error("Failed to update."); }
+      fetchTasksAndActivities(); // Refetch to ensure consistency
+    } catch { 
+      toast.error("Failed to update."); 
+      setTasks(previousTasks); // Revert on failure
+    }
   };
 
   const handleDeleteTask = async (taskId) => {
@@ -194,7 +211,7 @@ const ProjectDetail = () => {
                 <button onClick={() => { setTaskForm(emptyTask); setEditingTaskId(null); setShowModal(true); }} className="btn-primary"><Plus size={14} /> Add Task</button>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px", alignItems: "start" }}>
+              <div className="kanban-board">
                 {COLS.map(col => {
                   const { icon: Icon, color, bg, border } = colCfg[col];
                   const colTasks = tasks.filter(t => t.status === col);
