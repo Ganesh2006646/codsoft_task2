@@ -16,9 +16,12 @@ const Navbar = () => {
   
   if (user?.role === "admin") {
     links.push({ to: "/admin", label: "Admin Panel", icon: ShieldAlert });
-  } else {
+  } else if (user?.role === "head") {
     links.push({ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard });
     links.push({ to: "/create-project", label: "New Project", icon: FolderPlus });
+  } else {
+    // Regular users — no project creation
+    links.push({ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard });
   }
 
   const navStyle = {

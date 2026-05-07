@@ -5,7 +5,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
 import ProjectCard from "../components/ProjectCard";
-import { FolderPlus, LayoutGrid, ListChecks, CheckCircle2, TrendingUp, Users, UserCheck } from "lucide-react";
+import { FolderPlus, LayoutGrid, ListChecks, CheckCircle2, TrendingUp, Users, UserCheck, Bell, Check } from "lucide-react";
 
 const Dashboard = () => {
   const { token, user } = useAuth();
@@ -13,18 +13,24 @@ const Dashboard = () => {
   const [communityProjects, setCommunityProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const isHead = user?.role === "head";
+
   useEffect(() => {
-    Promise.all([
+    const fetches = [
       axios.get("/api/projects", { headers: { Authorization: `Bearer ${token}` } }),
-      axios.get("/api/projects/community", { headers: { Authorization: `Bearer ${token}` } })
-    ])
+    ];
+    if (!isHead) {
+      fetches.push(axios.get("/api/projects/community", { headers: { Authorization: `Bearer ${token}` } }));
+    }
+
+    Promise.all(fetches)
       .then(([myRes, commRes]) => {
         setProjects(myRes.data);
-        setCommunityProjects(commRes.data);
+        if (commRes) setCommunityProjects(commRes.data);
       })
       .catch(() => toast.error("Failed to load projects."))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, isHead]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this project and all its tasks?")) return;
@@ -44,21 +50,38 @@ const Dashboard = () => {
     }
   };
 
-  // A "Head/Mentor" is a user who owns at least one project
-  const ownedProjects = projects.filter(p => p.owner?._id === user?.id || p.owner === user?.id);
-  const isHead = ownedProjects.length > 0;
+  const handleAcceptRequest = async (projectId, userId) => {
+    try {
+      const { data } = await axios.post(`/api/projects/${projectId}/accept`, { userId }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(data.message);
+      // Refresh projects to update requests and members
+      const { data: updated } = await axios.get("/api/projects", { headers: { Authorization: `Bearer ${token}` } });
+      setProjects(updated);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to accept request.");
+    }
+  };
 
-  // Collect all unique team members across all owned projects
+  // ── Head computed values ──
+  const ownedProjects = isHead ? projects.filter(p => p.owner?._id === user?.id || p.owner === user?.id) : [];
+
+  // All unique team members with which project(s) they're in
   const teamMembersMap = {};
   ownedProjects.forEach(proj => {
     (proj.members || []).forEach(member => {
-      if (!teamMembersMap[member._id]) {
-        teamMembersMap[member._id] = { ...member, projects: [] };
-      }
+      if (!teamMembersMap[member._id]) teamMembersMap[member._id] = { ...member, projects: [] };
       teamMembersMap[member._id].projects.push(proj.title);
     });
   });
   const teamMembers = Object.values(teamMembersMap);
+
+  // All pending requests across all owned projects
+  const pendingRequests = [];
+  ownedProjects.forEach(proj => {
+    (proj.requests || []).forEach(req => {
+      pendingRequests.push({ ...req, projectId: proj._id, projectTitle: proj.title });
+    });
+  });
 
   const totalProjects = projects.length;
   const totalTasks = projects.reduce((s, p) => s + (p.totalTasks || 0), 0);
@@ -86,7 +109,7 @@ const Dashboard = () => {
             {greeting}, <span style={{ color: "#2563eb" }}>{user?.name}</span> {isHead ? "🎯" : "👋"}
           </h1>
           <p style={{ fontSize: "14px", color: "#64748b" }}>
-            {isHead ? "You are a Project Mentor — manage your projects and team below." : "Here's an overview of your projects and tasks."}
+            {isHead ? "You are a Project Head — manage your projects, team, and requests below." : "Browse and request to join community projects below."}
           </p>
         </div>
 
@@ -103,42 +126,82 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Your Projects Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>
-            {isHead ? "Your Projects (Mentor)" : "Your Projects"}
-          </h2>
-          <Link to="/create-project" className="btn-primary" style={{ textDecoration: "none", padding: "9px 16px" }}>
-            <FolderPlus size={15} /> New Project
-          </Link>
-        </div>
-
-        {/* Your Projects */}
-        {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-            {[1,2,3].map(i => <div key={i} className="card" style={{ height: "180px", background: "#f1f5f9" }} />)}
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="card fade-in" style={{ padding: "60px 20px", textAlign: "center", marginBottom: "40px" }}>
-            <div style={{ width: "64px", height: "64px", background: "#eff6ff", borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-              <FolderPlus size={28} color="#2563eb" />
-            </div>
-            <h3 style={{ fontSize: "17px", fontWeight: "700", color: "#1e293b", marginBottom: "8px" }}>No projects yet</h3>
-            <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "20px" }}>Create your first project to get started.</p>
-            <Link to="/create-project" className="btn-primary" style={{ textDecoration: "none" }}>
-              <FolderPlus size={15} /> Create Project
-            </Link>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-            {projects.map((p, i) => <ProjectCard key={p._id} project={p} onDelete={handleDelete} index={i} />)}
-          </div>
-        )}
-
-        {/* ── HEAD/MENTOR VIEW: My Team Members ── */}
+        {/* ── HEAD LAYOUT ── */}
         {isHead && (
           <>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", marginTop: "40px" }}>
+            {/* Your Projects (Head) */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>Your Projects</h2>
+              <Link to="/create-project" className="btn-primary" style={{ textDecoration: "none", padding: "9px 16px" }}>
+                <FolderPlus size={15} /> New Project
+              </Link>
+            </div>
+
+            {loading ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+                {[1,2,3].map(i => <div key={i} className="card" style={{ height: "180px", background: "#f1f5f9" }} />)}
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="card fade-in" style={{ padding: "60px 20px", textAlign: "center", marginBottom: "40px" }}>
+                <div style={{ width: "64px", height: "64px", background: "#eff6ff", borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                  <FolderPlus size={28} color="#2563eb" />
+                </div>
+                <h3 style={{ fontSize: "17px", fontWeight: "700", color: "#1e293b", marginBottom: "8px" }}>No projects yet</h3>
+                <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "20px" }}>Create your first project to get started.</p>
+                <Link to="/create-project" className="btn-primary" style={{ textDecoration: "none" }}>
+                  <FolderPlus size={15} /> Create Project
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+                {projects.map((p, i) => <ProjectCard key={p._id} project={p} onDelete={handleDelete} index={i} />)}
+              </div>
+            )}
+
+            {/* Pending Join Requests */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px", marginTop: "8px" }}>
+              <Bell size={20} color="#d97706" />
+              <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>Pending Join Requests</h2>
+              {pendingRequests.length > 0 && (
+                <span style={{ background: "#fef3c7", color: "#d97706", fontSize: "12px", fontWeight: "700", padding: "2px 10px", borderRadius: "20px", border: "1px solid #fde68a" }}>
+                  {pendingRequests.length}
+                </span>
+              )}
+            </div>
+
+            {loading ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px", marginBottom: "40px" }}>
+                {[1,2].map(i => <div key={i} className="card" style={{ height: "80px", background: "#f1f5f9" }} />)}
+              </div>
+            ) : pendingRequests.length === 0 ? (
+              <div className="card fade-in" style={{ padding: "28px 20px", textAlign: "center", marginBottom: "40px" }}>
+                <p style={{ color: "#94a3b8", fontSize: "14px" }}>No pending requests at the moment.</p>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px", marginBottom: "40px" }}>
+                {pendingRequests.map((req, i) => (
+                  <div key={`${req._id}-${req.projectId}`} className={`card fade-in delay-${i % 4}`} style={{ padding: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#fef3c7", color: "#d97706", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "15px", fontWeight: "700", flexShrink: 0 }}>
+                      {req.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: "700", color: "#1e293b", fontSize: "14px", margin: 0 }}>{req.name}</p>
+                      <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0" }}>{req.email}</p>
+                      <p style={{ fontSize: "11px", color: "#2563eb", margin: 0, fontWeight: "600" }}>→ {req.projectTitle}</p>
+                    </div>
+                    <button
+                      onClick={() => handleAcceptRequest(req.projectId, req._id)}
+                      style={{ display: "flex", alignItems: "center", gap: "4px", padding: "6px 12px", background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap" }}
+                    >
+                      <Check size={13} /> Accept
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* My Team Members */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
               <UserCheck size={20} color="#2563eb" />
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>My Team Members</h2>
               <span style={{ background: "#eff6ff", color: "#2563eb", fontSize: "12px", fontWeight: "700", padding: "2px 10px", borderRadius: "20px" }}>
@@ -153,7 +216,7 @@ const Dashboard = () => {
             ) : teamMembers.length === 0 ? (
               <div className="card fade-in" style={{ padding: "32px 20px", textAlign: "center" }}>
                 <Users size={28} color="#cbd5e1" style={{ margin: "0 auto 10px" }} />
-                <p style={{ color: "#94a3b8", fontSize: "14px" }}>No team members yet. Accept join requests from your project pages.</p>
+                <p style={{ color: "#94a3b8", fontSize: "14px" }}>No team members yet. Accept requests above to grow your team.</p>
               </div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "12px" }}>
@@ -167,9 +230,7 @@ const Dashboard = () => {
                       <p style={{ fontSize: "11px", color: "#94a3b8", margin: "2px 0 0" }}>{member.email}</p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px" }}>
                         {member.projects.map(proj => (
-                          <span key={proj} style={{ fontSize: "10px", background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", padding: "2px 6px", borderRadius: "4px" }}>
-                            {proj}
-                          </span>
+                          <span key={proj} style={{ fontSize: "10px", background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", padding: "2px 6px", borderRadius: "4px" }}>{proj}</span>
                         ))}
                       </div>
                     </div>
@@ -180,10 +241,30 @@ const Dashboard = () => {
           </>
         )}
 
-        {/* ── REGULAR USER VIEW: Community Projects to Join ── */}
+        {/* ── REGULAR USER LAYOUT ── */}
         {!isHead && (
           <>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", marginTop: "40px" }}>
+            {/* Joined Projects */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>My Projects</h2>
+            </div>
+
+            {loading ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+                {[1,2,3].map(i => <div key={i} className="card" style={{ height: "180px", background: "#f1f5f9" }} />)}
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="card fade-in" style={{ padding: "40px 20px", textAlign: "center", marginBottom: "40px" }}>
+                <p style={{ color: "#64748b", fontSize: "14px" }}>You haven't joined any projects yet. Browse community projects below and send a request!</p>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px", marginBottom: "40px" }}>
+                {projects.map((p, i) => <ProjectCard key={p._id} project={p} onDelete={handleDelete} index={i} />)}
+              </div>
+            )}
+
+            {/* Community Projects */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", marginTop: "8px" }}>
               <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#1e293b" }}>Community Projects</h2>
             </div>
 
@@ -206,7 +287,7 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <div style={{ marginTop: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "12px", color: "#94a3b8" }}>Mentor: <strong style={{ color: "#475569" }}>{p.owner?.name}</strong></span>
+                      <span style={{ fontSize: "12px", color: "#94a3b8" }}>Head: <strong style={{ color: "#475569" }}>{p.owner?.name}</strong></span>
                       <button onClick={() => handleRequestJoin(p._id)} className="btn-outline" style={{ padding: "6px 12px", fontSize: "12px" }}>
                         <Users size={14} /> Request to Join
                       </button>

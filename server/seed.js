@@ -39,9 +39,9 @@ async function seed() {
 
   // Create 3 Heads
   const heads = await User.insertMany([
-    { name: "Rajesh Kumar", email: "rajesh@projecthub.com", password: commonPassword },
-    { name: "Priya Sharma", email: "priya@projecthub.com", password: commonPassword },
-    { name: "Amit Patel", email: "amit@projecthub.com", password: commonPassword },
+    { name: "Rajesh Kumar", email: "rajesh@projecthub.com", password: commonPassword, role: "head" },
+    { name: "Priya Sharma", email: "priya@projecthub.com", password: commonPassword, role: "head" },
+    { name: "Amit Patel", email: "amit@projecthub.com", password: commonPassword, role: "head" },
   ]);
 
   // Create 10 Community Users

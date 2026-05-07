@@ -80,8 +80,8 @@ router.get("/community", async (req, res) => {
 // ─── POST /api/projects ─────────────────────────────────────
 router.post("/", async (req, res) => {
   try {
-    if (req.user.role === "admin") {
-      return res.status(403).json({ message: "Admins cannot create projects." });
+    if (req.user.role === "admin" || req.user.role === "user") {
+      return res.status(403).json({ message: "Only Project Heads can create projects." });
     }
 
     const { title, description, deadline } = req.body;

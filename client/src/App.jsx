@@ -34,9 +34,9 @@ const App = () => {
           <Route path="/register" element={<Register />} />
 
           {/* Protected routes */}
-          <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["user"]}><Dashboard /></ProtectedRoute>} />
-          <Route path="/create-project" element={<ProtectedRoute allowedRoles={["user"]}><CreateProject /></ProtectedRoute>} />
-          <Route path="/project/:id" element={<ProtectedRoute allowedRoles={["user"]}><ProjectDetail /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["user", "head"]}><Dashboard /></ProtectedRoute>} />
+          <Route path="/create-project" element={<ProtectedRoute allowedRoles={["head"]}><CreateProject /></ProtectedRoute>} />
+          <Route path="/project/:id" element={<ProtectedRoute allowedRoles={["user", "head"]}><ProjectDetail /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
 
           {/* Default redirect */}
