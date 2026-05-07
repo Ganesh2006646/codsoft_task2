@@ -136,14 +136,12 @@ JWT_SECRET=any_secret_string_here
 
 ### 2. Install Dependencies
 
-```bash
-# Backend
-cd server
-npm install
+Install root, backend, and frontend dependencies all at once:
 
-# Frontend
-cd ../client
+```bash
+# In the root CODESOFT2 directory
 npm install
+npm run install-all
 ```
 
 ---
@@ -167,29 +165,22 @@ Output when successful:
 
 ### 4. Start the Servers
 
-Open **two separate terminals**:
+You can start both the frontend and backend simultaneously from the root directory using the `concurrently` setup:
 
-**Terminal 1 — Backend:**
 ```bash
-cd server
+# In the root CODESOFT2 directory
 npm run dev
 ```
+
 Expected output:
 ```
-✅ Connected to MongoDB
-🚀 Server running on http://localhost:5001
+[server] ✅ Connected to MongoDB
+[server] 🚀 Server running on http://localhost:5001
+[client] VITE ready in xxx ms
+[client] ➜  Local: http://localhost:3001/
 ```
 
-**Terminal 2 — Frontend:**
-```bash
-cd client
-npm run dev
-```
-Expected output:
-```
-VITE ready in xxx ms
-➜  Local: http://localhost:3001/
-```
+*(Alternatively, you can run them in separate terminals by navigating into the `server` and `client` folders and running `npm run dev` in each.)*
 
 ---
 

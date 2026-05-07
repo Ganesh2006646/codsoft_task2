@@ -1,0 +1,27 @@
+{
+  "name": "codesoft2",
+  "version": "1.0.0",
+  "description": "**CodSoft Internship | Level 3 | Task 2**",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run start --prefix server\" \"npm run dev --prefix client\"",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "install-all": "npm install && npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ganesh2006646/codesoft_task2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Ganesh2006646/codesoft_task2/issues"
+  },
+  "homepage": "https://github.com/Ganesh2006646/codesoft_task2#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
