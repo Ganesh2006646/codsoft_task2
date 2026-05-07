@@ -1,5 +1,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const validator = require("validator");
 const User = require("../models/User");
 
 const router = express.Router();
@@ -20,6 +21,10 @@ router.post("/register", async (req, res) => {
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required." });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
     }
 
     // Check if user already exists
@@ -52,6 +57,10 @@ router.post("/login", async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
     }
 
     const user = await User.findOne({ email });

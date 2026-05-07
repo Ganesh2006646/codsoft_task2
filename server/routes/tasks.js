@@ -65,7 +65,7 @@ router.post("/", async (req, res) => {
 
     await Activity.create({
       project: projectId,
-      user: req.user.name,
+      user: req.user.name || req.user.email,
       action: `created task "${task.title}"${assignee ? ` and assigned it to ${assignee}` : ''}`
     });
 
@@ -113,7 +113,7 @@ router.patch("/:id/status", async (req, res) => {
     if (oldStatus !== status) {
       await Activity.create({
         project: task.project,
-        user: req.user.name,
+        user: req.user.name || req.user.email,
         action: `moved task "${task.title}" from ${oldStatus} → ${status}`
       });
     }
@@ -184,7 +184,7 @@ router.put("/:id", async (req, res) => {
 
     await Activity.create({
       project: task.project,
-      user: req.user.name,
+      user: req.user.name || req.user.email,
       action: `updated details for task "${task.title}"`
     });
 

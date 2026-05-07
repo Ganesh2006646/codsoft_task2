@@ -2,7 +2,22 @@
 
 **CodSoft Internship | Level 3 | Task 2**
 
-A full-stack MERN web app to create projects, manage tasks, and track progress with a clean white & blue UI.
+Built a full-stack MERN project management platform with JWT authentication, Kanban workflows, task tracking, dashboard analytics, and responsive UI architecture.
+
+---
+
+## Live Demo
+Frontend: [Deploying to Vercel...]
+Backend: [Deploying to Render...]
+Database: MongoDB Atlas
+
+---
+
+## Screenshots
+
+![Dashboard](assets/screenshots/dashboard.png)
+![Login](assets/screenshots/login.png)
+![Kanban Board](assets/screenshots/kanban.png)
 
 ---
 

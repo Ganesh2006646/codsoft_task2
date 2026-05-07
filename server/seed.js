@@ -6,8 +6,8 @@ const User = require("./models/User");
 const Project = require("./models/Project");
 const Task = require("./models/Task");
 
-const DEMO_EMAIL = "demo@projecthub.com";
-const DEMO_PASSWORD = "demo1234";
+const DEMO_EMAIL = process.env.DEMO_EMAIL || "demo@projecthub.com";
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD || "demo1234";
 
 async function seed() {
   await mongoose.connect(process.env.MONGO_URI);

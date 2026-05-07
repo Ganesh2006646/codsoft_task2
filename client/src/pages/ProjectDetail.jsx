@@ -184,8 +184,8 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ flex: "1 1 700px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+          <div>
             {total === 0 ? (
               <div className="card fade-in" style={{ padding: "60px 20px", textAlign: "center" }}>
                 <div style={{ width: "56px", height: "56px", background: "#eff6ff", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
@@ -196,7 +196,7 @@ const ProjectDetail = () => {
                 <button onClick={() => { setTaskForm(emptyTask); setEditingTaskId(null); setShowModal(true); }} className="btn-primary"><Plus size={14} /> Add Task</button>
               </div>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px", alignItems: "start" }}>
                 {COLS.map(col => {
                   const { icon: Icon, color, bg, border } = colCfg[col];
                   const colTasks = tasks.filter(t => t.status === col);
@@ -225,8 +225,8 @@ const ProjectDetail = () => {
             )}
           </div>
 
-          {/* Activity Timeline Side Panel */}
-          <div className="card fade-in" style={{ flex: "1 1 300px", padding: "20px", background: "#fff" }}>
+          {/* Activity Timeline Section */}
+          <div className="card fade-in" style={{ padding: "20px", background: "#fff" }}>
             <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#1e293b", marginBottom: "16px", display: "flex", alignItems: "center", gap: "6px" }}>
               <Activity size={16} color="#2563eb" /> Activity Timeline
             </h3>
