@@ -23,12 +23,13 @@ Database: MongoDB Atlas
 
 ## Demo Login
 
-| Field    | Value                 |
-|----------|-----------------------|
-| Email    | demo@projecthub.com   |
-| Password | demo1234              |
+| Account  | Email                   | Password        | Role                 |
+|----------|-------------------------|-----------------|----------------------|
+| Admin    | admin@projecthub.com    | adminpassword   | Full System Access   |
+| Head     | rajesh@projecthub.com   | password123     | Project Owner        |
+| User     | rahul@projecthub.com    | password123     | Community Member     |
 
-> On the login page, click **"Auto-fill ⚡"** to fill credentials automatically, then click **Sign In**.
+> On the login page, click the respective **"⚡" Auto-fill** buttons to fill credentials automatically, then click **Sign In**.
 
 The demo account includes **3 pre-built projects** with tasks across all statuses (Todo, In Progress, Done).
 
@@ -71,9 +72,6 @@ The demo account includes **3 pre-built projects** with tasks across all statuse
 | Project              | Backend | Frontend |
 |----------------------|---------|----------|
 | **This app**         | `5001`  | `3001`   |
-| E-Commerce (CODSOFT) | `5000`  | `5173`   |
-
-Both projects can run at the same time with no port conflicts.
 
 ---
 
@@ -265,18 +263,5 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## Common Errors & Fixes
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `bad auth: authentication failed` | Wrong Atlas password in `.env` | Reset password in Atlas → Database Access → Edit |
-| `querySrv ENOTFOUND` | `@` or special char in password breaks URI | URL-encode it: `@` → `%40` |
-| `EADDRINUSE port 5001` | Port already in use | Run `npx kill-port 5001` then restart |
-| `ECONNREFUSED` | Backend not running | Run `npm run dev` in server folder |
-| `queryTxt EREFUSED` | DNS flicker, retry once | Stop and run `npm run dev` again |
-| `JSON.parse undefined` (AuthContext) | Corrupted localStorage | Open browser console → run `localStorage.clear()` → refresh |
-| IP whitelist error | `00.00.00.00/0` is invalid | Delete it in Atlas → Network Access → add `0.0.0.0/0` |
-
----
 
 *CodSoft Internship — Level 3 Task 2 | Built with React + Node.js + MongoDB*

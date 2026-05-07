@@ -12,13 +12,13 @@ const Navbar = () => {
   const handleLogout = () => { logout(); navigate("/login"); };
   const isActive = (p) => location.pathname === p;
 
-  const links = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/create-project", label: "New Project", icon: FolderPlus },
-  ];
-
+  let links = [];
+  
   if (user?.role === "admin") {
     links.push({ to: "/admin", label: "Admin Panel", icon: ShieldAlert });
+  } else {
+    links.push({ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard });
+    links.push({ to: "/create-project", label: "New Project", icon: FolderPlus });
   }
 
   const navStyle = {

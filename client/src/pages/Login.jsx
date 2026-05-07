@@ -5,7 +5,9 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { LogIn, Mail, Lock, Boxes, Zap } from "lucide-react";
 
-const DEMO = { email: "demo@projecthub.com", password: "demo1234" };
+const DEMO_ADMIN = { email: "admin@projecthub.com", password: "adminpassword" };
+const DEMO_HEAD = { email: "rajesh@projecthub.com", password: "password123" };
+const DEMO_USER = { email: "rahul@projecthub.com", password: "password123" };
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -15,9 +17,11 @@ const Login = () => {
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const fillDemo = () => {
-    setForm(DEMO);
-    toast("Demo credentials filled in!", { icon: "⚡" });
+  const fillDemo = (type) => {
+    if (type === 'admin') setForm(DEMO_ADMIN);
+    if (type === 'head') setForm(DEMO_HEAD);
+    if (type === 'user') setForm(DEMO_USER);
+    toast(`${type.charAt(0).toUpperCase() + type.slice(1)} credentials filled!`, { icon: "⚡" });
   };
 
   const handleSubmit = async (e) => {
@@ -27,7 +31,11 @@ const Login = () => {
       const { data } = await axios.post("/api/auth/login", form);
       login(data.user, data.token);
       toast.success(`Welcome back, ${data.user.name}!`);
-      navigate("/dashboard");
+      if (data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed.");
     } finally { setLoading(false); }
@@ -48,22 +56,22 @@ const Login = () => {
 
         {/* ── Demo Credentials Box ── */}
         <div className="fade-in delay-1" style={{ background: "#fff", border: "2px solid #bfdbfe", borderRadius: "14px", padding: "16px 18px", marginBottom: "18px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-              <div style={{ background: "#2563eb", borderRadius: "6px", padding: "4px", display: "flex" }}>
-                <Zap size={13} color="#fff" />
-              </div>
-              <span style={{ fontSize: "13px", fontWeight: "700", color: "#1e40af" }}>Demo Account</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "12px" }}>
+            <div style={{ background: "#2563eb", borderRadius: "6px", padding: "4px", display: "flex" }}>
+              <Zap size={13} color="#fff" />
             </div>
-            <button onClick={fillDemo} style={{ fontSize: "12px", fontWeight: "600", color: "#fff", background: "#2563eb", border: "none", borderRadius: "6px", padding: "5px 12px", cursor: "pointer" }}>
-              Auto-fill ⚡
-            </button>
+            <span style={{ fontSize: "13px", fontWeight: "700", color: "#1e40af" }}>Demo Accounts</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "70px 1fr", gap: "4px 8px", fontSize: "13px" }}>
-            <span style={{ color: "#64748b" }}>Email</span>
-            <span style={{ fontWeight: "600", color: "#1e293b", fontFamily: "monospace" }}>{DEMO.email}</span>
-            <span style={{ color: "#64748b" }}>Password</span>
-            <span style={{ fontWeight: "600", color: "#1e293b", fontFamily: "monospace" }}>{DEMO.password}</span>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <button type="button" onClick={() => fillDemo('admin')} style={{ flex: 1, fontSize: "12px", fontWeight: "600", color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", cursor: "pointer" }}>
+              Admin ⚡
+            </button>
+            <button type="button" onClick={() => fillDemo('head')} style={{ flex: 1, fontSize: "12px", fontWeight: "600", color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", cursor: "pointer" }}>
+              Head ⚡
+            </button>
+            <button type="button" onClick={() => fillDemo('user')} style={{ flex: 1, fontSize: "12px", fontWeight: "600", color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", cursor: "pointer" }}>
+              User ⚡
+            </button>
           </div>
         </div>
 

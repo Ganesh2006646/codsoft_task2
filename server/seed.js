@@ -36,17 +36,22 @@ async function seed() {
 
   // Create 3 Heads
   const heads = await User.insertMany([
-    { name: "Alice Head", email: "alice@projecthub.com", password: "password123" },
-    { name: "Bob Head", email: "bob@projecthub.com", password: "password123" },
-    { name: "Charlie Head", email: "charlie@projecthub.com", password: "password123" },
+    { name: "Rajesh Kumar", email: "rajesh@projecthub.com", password: "password123" },
+    { name: "Priya Sharma", email: "priya@projecthub.com", password: "password123" },
+    { name: "Amit Patel", email: "amit@projecthub.com", password: "password123" },
   ]);
 
   // Create 10 Community Users
-  const communityUsersData = Array.from({ length: 10 }).map((_, i) => ({
-    name: `User ${i + 1}`,
-    email: `user${i + 1}@projecthub.com`,
-    password: "password123",
-  }));
+  const indianNames = ["Rahul Gupta", "Neha Singh", "Vikram Reddy", "Sneha Joshi", "Aditya Verma", "Kavya Desai", "Ravi Menon", "Pooja Iyer", "Sanjay Nair", "Anjali Rao"];
+  
+  const communityUsersData = indianNames.map((name, i) => {
+    const firstName = name.split(" ")[0].toLowerCase();
+    return {
+      name: name,
+      email: `${firstName}@projecthub.com`,
+      password: "password123",
+    };
+  });
   const communityUsers = await User.insertMany(communityUsersData);
 
   // Heads create projects and add some community users as members
@@ -87,14 +92,14 @@ async function seed() {
       description: "Initial setup",
       status: "Done",
       project: proj._id,
-      assignee: `User ${idx * 2 + 1}`
+      assignee: indianNames[idx * 2]
     });
     tasksData.push({
       title: `Task 2 for ${proj.title}`,
       description: "Implementation phase",
       status: "In Progress",
       project: proj._id,
-      assignee: `User ${idx * 2 + 2}`
+      assignee: indianNames[idx * 2 + 1]
     });
   });
 
