@@ -34,11 +34,14 @@ async function seed() {
     password: DEMO_PASSWORD,
   });
 
+  const salt = await bcrypt.genSalt(12);
+  const commonPassword = await bcrypt.hash("password123", salt);
+
   // Create 3 Heads
   const heads = await User.insertMany([
-    { name: "Rajesh Kumar", email: "rajesh@projecthub.com", password: "password123" },
-    { name: "Priya Sharma", email: "priya@projecthub.com", password: "password123" },
-    { name: "Amit Patel", email: "amit@projecthub.com", password: "password123" },
+    { name: "Rajesh Kumar", email: "rajesh@projecthub.com", password: commonPassword },
+    { name: "Priya Sharma", email: "priya@projecthub.com", password: commonPassword },
+    { name: "Amit Patel", email: "amit@projecthub.com", password: commonPassword },
   ]);
 
   // Create 10 Community Users
@@ -49,7 +52,7 @@ async function seed() {
     return {
       name: name,
       email: `${firstName}@projecthub.com`,
-      password: "password123",
+      password: commonPassword,
     };
   });
   const communityUsers = await User.insertMany(communityUsersData);
