@@ -1,4 +1,4 @@
-import { Trash2, ArrowRight, Calendar, User } from "lucide-react";
+import { Trash2, ArrowRight, Calendar, User, Edit2 } from "lucide-react";
 
 const statusConfig = {
   "Todo":        { cls: "badge-todo",       next: "In Progress" },
@@ -6,7 +6,7 @@ const statusConfig = {
   "Done":        { cls: "badge-done",       next: null },
 };
 
-const TaskCard = ({ task, onStatusChange, onDelete }) => {
+const TaskCard = ({ task, onStatusChange, onDelete, onEdit }) => {
   const { _id, title, description, assignee, dueDate, status } = task;
   const cfg = statusConfig[status];
   const isOverdue = dueDate && new Date(dueDate) < new Date() && status !== "Done";
@@ -49,10 +49,16 @@ const TaskCard = ({ task, onStatusChange, onDelete }) => {
         ) : (
           <span style={{ fontSize: "12px", color: "#16a34a", fontWeight: "600" }}>✓ Completed</span>
         )}
-        <button onClick={() => onDelete(_id)} style={{ padding: "4px", border: "none", background: "transparent", cursor: "pointer", color: "#94a3b8", borderRadius: "4px" }}
-          onMouseEnter={e => e.currentTarget.style.color = "#ef4444"} onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}>
-          <Trash2 size={13} />
-        </button>
+        <div style={{ display: "flex", gap: "4px" }}>
+          <button onClick={() => onEdit(task)} style={{ padding: "4px", border: "none", background: "transparent", cursor: "pointer", color: "#94a3b8", borderRadius: "4px" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#2563eb"} onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}>
+            <Edit2 size={13} />
+          </button>
+          <button onClick={() => onDelete(_id)} style={{ padding: "4px", border: "none", background: "transparent", cursor: "pointer", color: "#94a3b8", borderRadius: "4px" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#ef4444"} onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}>
+            <Trash2 size={13} />
+          </button>
+        </div>
       </div>
     </div>
   );
