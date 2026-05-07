@@ -1,6 +1,7 @@
 const express = require("express");
 const Project = require("../models/Project");
 const Task = require("../models/Task");
+const User = require("../models/User");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -9,12 +10,17 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // ─── GET /api/projects ──────────────────────────────────────
-// Returns all projects belonging to the logged-in user
+// Returns all projects where user is owner or member
 router.get("/", async (req, res) => {
   try {
-    const projects = await Project.find({ owner: req.user.id }).sort({
-      createdAt: -1,
-    });
+    const projects = await Project.find({
+      $or: [{ owner: req.user.id }, { members: req.user.id }]
+    })
+      .populate("owner", "name email")
+      .populate("members", "name email")
+      .sort({
+        createdAt: -1,
+      });
 
     // Attach task stats to each project
     const projectsWithStats = await Promise.all(
@@ -69,8 +75,10 @@ router.get("/:id", async (req, res) => {
   try {
     const project = await Project.findOne({
       _id: req.params.id,
-      owner: req.user.id,
-    });
+      $or: [{ owner: req.user.id }, { members: req.user.id }],
+    })
+      .populate("owner", "name email")
+      .populate("members", "name email");
 
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
@@ -84,6 +92,9 @@ router.get("/:id", async (req, res) => {
 
     res.json({ ...project.toObject(), totalTasks, completedTasks });
   } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Project not found." });
+    }
     res.status(500).json({ message: "Failed to fetch project." });
   }
 });
@@ -97,7 +108,7 @@ router.delete("/:id", async (req, res) => {
     });
 
     if (!project) {
-      return res.status(404).json({ message: "Project not found." });
+      return res.status(404).json({ message: "Project not found or you are not the owner." });
     }
 
     // Cascade-delete all tasks belonging to this project
@@ -105,7 +116,47 @@ router.delete("/:id", async (req, res) => {
 
     res.json({ message: "Project and its tasks deleted successfully." });
   } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Project not found." });
+    }
     res.status(500).json({ message: "Failed to delete project." });
+  }
+});
+
+// ─── POST /api/projects/:id/invite ──────────────────────────
+router.post("/:id/invite", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const project = await Project.findOne({
+      _id: req.params.id,
+      owner: req.user.id,
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found or you are not the owner." });
+    }
+
+    const userToInvite = await User.findOne({ email });
+    if (!userToInvite) {
+      return res.status(404).json({ message: "User with this email not found." });
+    }
+
+    if (project.owner.toString() === userToInvite._id.toString() || project.members.includes(userToInvite._id)) {
+      return res.status(400).json({ message: "User is already in the project." });
+    }
+
+    project.members.push(userToInvite._id);
+    await project.save();
+
+    res.json({
+      message: "User invited successfully.",
+      user: { _id: userToInvite._id, name: userToInvite.name, email: userToInvite.email }
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: "Project not found." });
+    }
+    res.status(500).json({ message: "Failed to invite user." });
   }
 });
 
