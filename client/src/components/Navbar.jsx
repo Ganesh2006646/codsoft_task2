@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { LayoutDashboard, FolderPlus, LogOut, Menu, X, Boxes } from "lucide-react";
+import { LayoutDashboard, FolderPlus, LogOut, Menu, X, Boxes, ShieldAlert } from "lucide-react";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -16,6 +16,10 @@ const Navbar = () => {
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/create-project", label: "New Project", icon: FolderPlus },
   ];
+
+  if (user?.role === "admin") {
+    links.push({ to: "/admin", label: "Admin Panel", icon: ShieldAlert });
+  }
 
   const navStyle = {
     background: "#fff",

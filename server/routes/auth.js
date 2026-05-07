@@ -8,7 +8,7 @@ const router = express.Router();
 // Helper — generate JWT token
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user._id, email: user.email, name: user.name },
+    { id: user._id, email: user.email, name: user.name, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
@@ -39,7 +39,7 @@ router.post("/register", async (req, res) => {
 
     res.status(201).json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -77,7 +77,7 @@ router.post("/login", async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
     res.status(500).json({ message: "Server error. Please try again." });

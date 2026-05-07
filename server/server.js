@@ -9,6 +9,7 @@ const authRoutes = require("./routes/auth");
 const projectRoutes = require("./routes/projects");
 const taskRoutes = require("./routes/tasks");
 const activityRoutes = require("./routes/activities");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/activities", activityRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Health-check endpoint
 app.get("/", (_req, res) => {

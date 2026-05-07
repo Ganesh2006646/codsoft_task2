@@ -19,6 +19,14 @@ async function seed() {
   await User.deleteMany({});
   console.log("🗑️  Cleared old data");
 
+  // Create Admin User
+  const adminUser = await User.create({
+    name: "System Admin",
+    email: "admin@projecthub.com",
+    password: "adminpassword",
+    role: "admin",
+  });
+
   // Create Demo User
   const demoUser = await User.create({
     name: "Demo User",
@@ -93,6 +101,9 @@ async function seed() {
   await Task.insertMany(tasksData);
 
   console.log("🌱 Database seeded successfully!");
+  console.log("─────────────────────────────────");
+  console.log("  🛡️ Admin Email  : admin@projecthub.com");
+  console.log("  🛡️ Admin Pass   : adminpassword");
   console.log("─────────────────────────────────");
   console.log("  📧 Demo Email   : " + DEMO_EMAIL);
   console.log("  🔑 Demo Password: " + DEMO_PASSWORD);
